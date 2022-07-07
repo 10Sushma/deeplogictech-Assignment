@@ -1,13 +1,15 @@
-const https = require("https");
-const http = require("http");
+const https = require("node:https");
+const http = require('http');
+const PORT = 3000;
 
 let data = "";
-let latest_array = [];
+let json_array  ='';
+let latest_news=[] 
+
 async function fetchData() {
-  // wrapping fetching operation in promise to use async await
   return new Promise((resolve, reject) => {
     https
-      .get("https://time.com/", (res) => {
+      .get('https://time.com/', (res) => {
         res.on("data", (chunk) => {
           data += chunk;
         });
@@ -16,52 +18,80 @@ async function fetchData() {
           resolve(data);
         });
       })
-      .on("error", (error) => {
-        reject(error);
+      .on("error", (err) => {
+        reject(err);
       });
   });
 }
 
-// function that calls fetch() and get the page source html as response
-async function getLatestNews() {
-  try {
-    const data = await fetchData();
-    // using regular expressions to get the pattern and filter out the latest news section from html
-    const p1 =
-      /(<li)\s+(class="latest-stories__item">)\s+(<a)\s+(href="\/)([0-9]+\/).*\s+(<h3)\s+(class="latest-stories__item-headline">).*\s+(<\/a>)/gm;
-
-    let result = data.match(p1);
-
-    for (i = 0; i <= 5; i++) {
-      // separating the url part and title part from each single latest news
-      let p2 = /(\/[0-9]+\/).*"/gm;
-      let urlPart = result[i].match(p2);
-      let url = urlPart[0];
-
-      url = url.slice(0, url.length - 1);
-
-      let p3 = /(>[a-zA-Z0-9]+).*</gm;
-      let titlePart = result[i].match(p3);
-      let title = titlePart [0];
-     title =title.slice(1,title.length - 1);
-
-      // putting each news link and title in object, and then pushing that object into the resultant array
-      const NewsObject = { title:title, link: "https://time.com" + url };
-      latest_array .push(NewsObject);
+async function getData() {
+    try {
+      const data = await fetchData();
+      //console.log(data)
+      for (let i= (data.indexOf('latest-stories__item')); i<=data.lastIndexOf('latest-stories__item');i++){
+        json_array+=data[i]
+      }
+    //  console.log(json_array)
+      new_text=''
+      final_arr=[]
+      final_str=''
+      new_text+=json_array.split('<li class="latest-stories__item">')
+      new_arr=new_text.split(',')
+      for(let i=0;i<new_arr.length;i=i+2){
+        final_str +=new_arr[i]
+        final_arr.push(new_arr[i])
+      }
+    //   console.log(final_arr)
+     let  url2=[]
+     
+    for (let i in final_arr){
+    let  url1=''
+            for (let j=final_arr[i].indexOf('/'); j<=final_arr[i].indexOf('/"'); j++){
+                url1+=final_arr[i][j]       
+            }
+       
+       url2.push('https://time.com/'+url1)
+       url1=''
+      }
+    //   console.log(url2)
+      let  title_arr=[]
+     
+      for (let i in final_arr){
+      let  title_str=''
+              for (let j=(final_arr[i].indexOf('e">'))+3; j<final_arr[i].indexOf('</'); j++){
+                title_str+=final_arr[i][j]       
+              }
+         
+              title_arr.push(title_str)
+              title_str=''
+        }
+        // console.log(title_arr)
+       
+    
+        for (let i=0;i<=5;i++){
+            let obj
+           obj={title:title_arr[i],link:url2[i]}
+            latest_news.push(obj)
+           
+        }
+        // console.log(lastest_news)
     }
-  } catch (err) {
-    console.log(err);
-  }
-}
-getLatestNews();
-const server = http.createServer((req, res) => {
-  if (req.url === "/getTimeStories" && req.method === "GET") {
-    res.end(JSON.stringify( latest_array));
-  }
-});
 
-server.listen(3000, () => {
-  console.log("server is running at port 3000");
+    
+    catch (error) {
+        console.log("following error occured while fetching:", error);
+    }
+}
+getData()
+
+const server = http.createServer(function (req, res) {
+    if (req.url === "/getTimeStories" && req.method === "GET") {
+        res.end(JSON.stringify( latest_news ));
+      }
+ 
+});
+server.listen(PORT, () => {
+  console.log(`Server running at PORT:${PORT}/`);
 });
 // var express = require("express");
 // const app = express();
