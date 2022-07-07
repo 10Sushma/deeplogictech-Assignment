@@ -53,7 +53,7 @@ async function getData() {
        link_arr.push('https://time.com/'+link_str)
        link_str=''
       }
-    //   console.log(url2)
+   
       let  title_arr=[]
      
       for (let i in final_arr){
