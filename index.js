@@ -36,12 +36,13 @@ async function getData() {
       final_arr=[]
       final_str=''
       new_text+=json_array.split('<li class="latest-stories__item">')
-      new_arr=new_text.split(',')
-      for(let i=0;i<new_arr.length;i=i+2){
+      new_arr=new_text.split('<a')
+      // console.log(new_arr)
+      for(let i=0;i<new_arr.length;i=i+1){
         final_str +=new_arr[i]
         final_arr.push(new_arr[i])
       }
-    //   console.log(final_arr)
+      // console.log(final_arr)
      let  link_arr=[]
      
     for (let i in final_arr){
@@ -66,7 +67,7 @@ async function getData() {
               title_str=''
         }
         // console.log(title_arr)  
-        for (let i=0;i<=5;i++){
+        for (let i=1;i<=6;i++){
             let obj
            obj={title:title_arr[i],link:link_arr[i]}
             latest_news.push(obj)
@@ -91,52 +92,3 @@ const server = http.createServer(function (req, res) {
 server.listen(PORT, () => {
   console.log(`Server running at PORT:${PORT}/`);
 });
-// var express = require("express");
-// const app = express();
-// const cheerio = require("cheerio");//For extracting the text in the HTML code of the page
-// const fetch = require("node-fetch");// getting data from a static website
-// app.use(express.json());
-
-// function getFromTime(resp) {
-//   fetch('https://time.com/') // Perform a fetch function to get data from the time website.  
-//     .then((res) => res.text())// Convert that returned data into simple HTML.
-//     .then((html) => { // Use that returned data and then send that data to a callback function called resp 
-//       resp(html);
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//     });
-// }
-
-// function getLatestNews(data) {
-// // Load the HTML data into the cheerio instance. This means that we will now be selecting the required tags from the HTML that is returned from the fetch method we defined earlier in the getFromTime method.
-//   const $ = cheerio.load(data);
-//   let latestNews = [];// Define the latestNews array. This array will store all of our titles.
-//   $("section")
-//     .children("div")
-//     .children("ul")
-//     .children(".latest-stories__item")
-//     .each(function (i, el) {
-//       latestNews.push({
-//         title: $(el).children("a").children("h3").text(),
-//         link: "https://time.com/" + $(el).children("a").attr("href"),
-//       });
-//     });
-//   return latestNews;
-// }
-
-// // Running the getFromTime function and providing the HTML data(the datavariable) in the callback arguments.
-// getFromTime((data) => {
-//   news = getLatestNews(data);
-// });
-
-// app.get("/", async (req, res) => {
-//   res.json('Welcome');
-// });
-// app.get("/getTimeStories", async (req, res) => {
-//     res.json(news);
-//   });
-
-// app.listen(5000, () => {
-//   console.log("Server running on port 5000");
-// });
